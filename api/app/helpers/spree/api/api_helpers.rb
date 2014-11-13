@@ -95,7 +95,7 @@ module Spree
 
       @@taxon_attributes = [
         :id, :name, :pretty_name, :permalink, :parent_id,
-        :taxonomy_id
+        :taxonomy_id, :icon
       ]
 
       @@inventory_unit_attributes = [
