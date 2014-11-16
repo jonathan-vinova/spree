@@ -11,7 +11,9 @@ module Spree
       def create
         variant = Variant.find(params[:line_item][:variant_id])
         @line_item = @order.contents.add(variant, params[:line_item][:quantity].to_i)
-
+        p "============"
+        p @order
+        p "============"
         if @order.save
           render_order_form
         else
