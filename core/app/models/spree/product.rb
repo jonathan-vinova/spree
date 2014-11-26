@@ -96,6 +96,78 @@ module Spree
 
     after_initialize :ensure_master
 
+    def format_price(amount)
+        Spree::Money.new(amount)
+      end
+
+    Spree::Product.scope :price_range_any,
+      lambda {|*opts|
+        conds = opts.map {|o| self.price_filter[:conds][o]}.reject { |c| c.nil? }
+        scope = conds.shift
+        conds.each do |new_scope|
+          scope = scope.or(new_scope)
+        end
+        p self.price_filter[:conds]
+        Spree::Product.joins(master: :default_price).where(scope)
+      }
+
+    def self.price_filter
+      v = Spree::Price.arel_table
+      conds = [ [ "Under 20"     , v[:amount].lteq(20)],
+                [ "20 - 40"        , v[:amount].in(20..40)],
+                [ "40 - 60"        , v[:amount].in(40..60)],
+                [ "60 - 100"        , v[:amount].in(60..100)],
+                [ "Over 100" , v[:amount].gteq(100)]]
+      {
+        name:   Spree.t(:price_range),
+        scope:  :price_range_any,
+        conds:  Hash[*conds.flatten],
+        labels: conds.map { |k,v| [k, k] }
+      }
+    end
+
+    if Spree::OptionValue.table_exists? && (@size_option = Spree::OptionType.find_by_name("tshirt-size"))
+      Spree::Product.scope :size_any,
+                           lambda {|opts|
+                             p opts
+                             conds = opts.map {|o|  self.size_filter[:conds][o]}.reject {|c| c.nil?}
+                             p conds
+                             Spree::Product.joins(:variants_including_master => :option_values).where("#{Spree::OptionValue.table_name}.option_type_id = ?", @size_option).where(conds)
+                           }
+      def self.size_filter
+        sizes = Spree::OptionValue.where(:option_type_id => @size_option).order("position").map(&:presentation).compact.uniq
+        tn = Spree::OptionValue.table_name
+        conds  = Hash[*sizes.map {|b| [b, "#{tn}.presentation = '#{b}'"]}.flatten]
+
+        { :name   => "Size",
+          :scope  => :size_any,
+          :conds  => conds,
+          :class  => "sizes",
+          :labels => sizes.map {|k| [k,k]}
+        }
+      end
+    end
+
+    if Spree::OptionValue.table_exists? && (@color_option = Spree::OptionType.find_by_name("tshirt-color"))
+      Spree::Product.scope :color_any,
+                           lambda {|opts|
+                             conds = opts.map {|o|  self.color_filter[:conds][o]}.reject {|c| c.nil?}
+                             Spree::Product.joins(:variants_including_master => :option_values).where("#{Spree::OptionValue.table_name}.option_type_id = ?", @color_option).where(conds)
+                           }
+      def self.color_filter
+        sizes = Spree::OptionValue.where(:option_type_id => @color_option).order("position").map(&:presentation).compact.uniq
+        tn = Spree::OptionValue.table_name
+        conds  = Hash[*sizes.map {|b| [b, "#{tn}.presentation = '#{b}'"]}.flatten]
+
+        { :name   => "Color",
+          :scope  => :color_any,
+          :conds  => conds,
+          :class  => "colors",
+          :labels => sizes.map {|k| [k,k]}
+        }
+      end
+    end
+
     # the master variant is not a member of the variants array
     def has_variants?
       variants.any?

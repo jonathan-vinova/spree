@@ -85,7 +85,7 @@ module Spree
     def deleted?
       !!deleted_at
     end
-
+    
     # Product may be created with deleted_at already set,
     # which would make AR's default finder return nil.
     # This is a stopgap for that little problem.
