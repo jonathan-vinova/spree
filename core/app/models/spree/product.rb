@@ -126,7 +126,7 @@ module Spree
       }
     end
 
-    if Spree::OptionValue.table_exists? && (@size_option = Spree::OptionType.find_by_name("tshirt-size"))
+    if Spree::OptionValue.table_exists? && (@size_option = Spree::OptionType.find_by_name("all-size"))
       Spree::Product.scope :size_any,
                            lambda {|opts|
                              p opts
@@ -148,7 +148,7 @@ module Spree
       end
     end
 
-    if Spree::OptionValue.table_exists? && (@color_option = Spree::OptionType.find_by_name("tshirt-color"))
+    if Spree::OptionValue.table_exists? && (@color_option = Spree::OptionType.find_by_name("all-color"))
       Spree::Product.scope :color_any,
                            lambda {|opts|
                              conds = opts.map {|o|  self.color_filter[:conds][o]}.reject {|c| c.nil?}
