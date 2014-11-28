@@ -101,7 +101,7 @@ module Spree
       end
 
     Spree::Product.scope :price_range_any,
-      lambda {|*opts|
+      lambda {|opts|
         conds = opts.map {|o| self.price_filter[:conds][o]}.reject { |c| c.nil? }
         scope = conds.shift
         conds.each do |new_scope|
