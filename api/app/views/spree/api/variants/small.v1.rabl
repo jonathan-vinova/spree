@@ -10,3 +10,4 @@ child :option_values => :option_values do
 end
 
 child(:images => :images) { extends "spree/api/images/show" }
+node(:product_images) {|v| v.product.images}
