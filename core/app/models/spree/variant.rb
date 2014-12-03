@@ -183,7 +183,7 @@ module Spree
       self.track_inventory? && Spree::Config.track_inventory_levels
     end
 
-    def product_images
+    def master_images
       self.product.images
     end
 
